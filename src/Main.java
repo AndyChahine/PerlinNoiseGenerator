@@ -1,24 +1,27 @@
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
+import javax.imageio.ImageIO;
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
-import javax.swing.JTextField;
+import javax.swing.JSpinner;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import java.awt.GridLayout;
-import javax.swing.SwingConstants;
-import java.awt.GridBagLayout;
-import java.awt.GridBagConstraints;
-import java.awt.Insets;
-import javax.swing.JSpinner;
-import java.awt.Component;
-import javax.swing.SpinnerNumberModel;
+import javax.swing.filechooser.FileFilter;
 
 public class Main {
 	
@@ -88,9 +91,9 @@ public class Main {
 		frame.getContentPane().add(panel_1);
 		GridBagLayout gbl_panel_1 = new GridBagLayout();
 		gbl_panel_1.columnWidths = new int[]{0, 50, 200, 0, 0};
-		gbl_panel_1.rowHeights = new int[]{0, 50, 50, 50, 50, 50, 50, 50, 0};
+		gbl_panel_1.rowHeights = new int[]{0, 50, 50, 50, 50, 50, 50, 50, 0, 0, 0, 0, 0, 0};
 		gbl_panel_1.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
-		gbl_panel_1.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_panel_1.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		panel_1.setLayout(gbl_panel_1);
 		
 		JLabel lblNewLabel_5 = new JLabel("Elevation Map");
@@ -298,7 +301,7 @@ public class Main {
 		JLabel lblNewLabel_7 = new JLabel("Octaves");
 		GridBagConstraints gbc_lblNewLabel_7 = new GridBagConstraints();
 		gbc_lblNewLabel_7.anchor = GridBagConstraints.EAST;
-		gbc_lblNewLabel_7.insets = new Insets(0, 0, 0, 5);
+		gbc_lblNewLabel_7.insets = new Insets(0, 0, 5, 5);
 		gbc_lblNewLabel_7.gridx = 1;
 		gbc_lblNewLabel_7.gridy = 7;
 		panel_1.add(lblNewLabel_7, gbc_lblNewLabel_7);
@@ -310,7 +313,7 @@ public class Main {
 		slider_octaves.setMaximum(12);
 		GridBagConstraints gbc_slider_octaves = new GridBagConstraints();
 		gbc_slider_octaves.fill = GridBagConstraints.HORIZONTAL;
-		gbc_slider_octaves.insets = new Insets(0, 0, 0, 5);
+		gbc_slider_octaves.insets = new Insets(0, 0, 5, 5);
 		gbc_slider_octaves.gridx = 2;
 		gbc_slider_octaves.gridy = 7;
 		slider_octaves.addChangeListener(new ChangeListener() {
@@ -326,10 +329,42 @@ public class Main {
 		panel_1.add(slider_octaves, gbc_slider_octaves);
 		
 		GridBagConstraints gbc_label_octaves = new GridBagConstraints();
+		gbc_label_octaves.insets = new Insets(0, 0, 5, 0);
 		gbc_label_octaves.anchor = GridBagConstraints.WEST;
 		gbc_label_octaves.gridx = 3;
 		gbc_label_octaves.gridy = 7;
 		panel_1.add(label_octaves, gbc_label_octaves);
+		
+		JButton exportButton = new JButton("Export");
+		exportButton.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fc = new JFileChooser();
+				fc.setCurrentDirectory(new File(System.getProperty("user.dir")));
+				int res = fc.showSaveDialog(frame);
+				if(res == JFileChooser.APPROVE_OPTION) {
+					File outputFile = fc.getSelectedFile();
+					String filename = outputFile.getName();
+					if(filename.contains(".")) {
+						filename = filename.substring(0, filename.lastIndexOf('.'));
+					}
+					filename += "." + "png";
+					outputFile = new File(filename);
+					try {
+						ImageIO.write(map, "png", outputFile);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+			}
+		});
+		GridBagConstraints gbc_exportButton = new GridBagConstraints();
+		gbc_exportButton.insets = new Insets(0, 0, 0, 5);
+		gbc_exportButton.gridx = 1;
+		gbc_exportButton.gridy = 12;
+		panel_1.add(exportButton, gbc_exportButton);
+		
 		frame.pack();
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
