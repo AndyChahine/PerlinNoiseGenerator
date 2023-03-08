@@ -1,6 +1,10 @@
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -31,6 +35,11 @@ public class Main {
 	public static final double A = 1.0d;
 	public static final int O = 6;
 	
+	private static PerlinNoise noise = new PerlinNoise(S, P, F, A, O);
+	
+	private static GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+	private static GraphicsDevice dev = env.getDefaultScreenDevice();
+	private static GraphicsConfiguration conf = dev.getDefaultConfiguration();
 	private static BufferedImage map;
 	private static JLabel label_persistence;
 	private static JLabel label_frequency;
@@ -40,9 +49,26 @@ public class Main {
 	private static int w = 128;
 	private static int h = 128;
 	
+	public static BufferedImage generateNoiseMap(int width, int height) {
+		BufferedImage image = conf.createCompatibleImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		
+		for(int r = 0; r < image.getHeight(); r++) {
+			for(int c = 0; c < image.getWidth(); c++) {
+				double val = noise.getHeight(c, r);
+				if(val >= 1d) { val = 1d; }
+				if(val <= -1d) { val = -1d; }
+				double noiseVal = (val * 0.5d) + 0.5d;
+				
+				image.setRGB(c, r, new Color((float)noiseVal, (float)noiseVal, (float)noiseVal).getRGB());
+			}
+		}
+		
+		return image;
+	}
+	
 	public static void main(String[] args) {
-		PerlinNoise noise = new PerlinNoise(S, P, F, A, O);
-		map = noise.generateNoiseMap(w, h);
+		
+		map = generateNoiseMap(w, h);
 		
 //		PerlinNoise elevation = new PerlinNoise(1, 1d, 0.01d, 1d, 6);
 //		PerlinNoise moisture = new PerlinNoise(879, 1d, 0.005d, 1d, 6);
@@ -123,7 +149,7 @@ public class Main {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				w = (Integer)spinner_width.getValue();
-				map = noise.generateNoiseMap(w, h);
+				map = generateNoiseMap(w, h);
 				panel.repaint();
 			}
 		});
@@ -150,7 +176,7 @@ public class Main {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				h = (Integer)spinner_height.getValue();
-				map = noise.generateNoiseMap(w, h);
+				map = generateNoiseMap(w, h);
 				panel.repaint();
 			}
 		});
@@ -180,7 +206,7 @@ public class Main {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				noise.setSeed((Integer)spinner_seed.getValue());
-				map = noise.generateNoiseMap(w, h);
+				map = generateNoiseMap(w, h);
 				panel.repaint();
 			}
 		});
@@ -209,7 +235,7 @@ public class Main {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				noise.setPersistence(slider_persistence.getValue() / 100d);
-				map = noise.generateNoiseMap(w, h);
+				map = generateNoiseMap(w, h);
 				label_persistence.setText(Double.toString(slider_persistence.getValue() / 100d));
 				panel.repaint();
 			}
@@ -246,7 +272,7 @@ public class Main {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				noise.setFrequency(slider_frequency.getValue() / 1000d);
-				map = noise.generateNoiseMap(w, h);
+				map = generateNoiseMap(w, h);
 				label_frequency.setText(Double.toString(noise.getFrequency()));
 				panel.repaint();
 			}
@@ -284,7 +310,7 @@ public class Main {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				noise.setAmplitude(slider_amplitude.getValue() / 10d);
-				map = noise.generateNoiseMap(w, h);
+				map = generateNoiseMap(w, h);
 				label_amplitude.setText(Double.toString(noise.getAmplitude()));
 				panel.repaint();
 			}
@@ -321,7 +347,7 @@ public class Main {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				noise.setOctaves(slider_octaves.getValue());
-				map = noise.generateNoiseMap(w, h);
+				map = generateNoiseMap(w, h);
 				label_octaves.setText(Integer.toString(noise.getOctaves()));
 				panel.repaint();
 			}
@@ -345,12 +371,14 @@ public class Main {
 				int res = fc.showSaveDialog(frame);
 				if(res == JFileChooser.APPROVE_OPTION) {
 					File outputFile = fc.getSelectedFile();
+					
 					String filename = outputFile.getName();
 					if(filename.contains(".")) {
 						filename = filename.substring(0, filename.lastIndexOf('.'));
 					}
 					filename += "." + "png";
 					outputFile = new File(filename);
+					
 					try {
 						ImageIO.write(map, "png", outputFile);
 					} catch (IOException e1) {

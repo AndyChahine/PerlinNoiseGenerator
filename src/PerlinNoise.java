@@ -68,23 +68,6 @@ public class PerlinNoise {
 	public void setPersistence(double persistence) {
 		this.persistence = persistence;
 	}
-	
-	public BufferedImage generateNoiseMap(int width, int height) {
-		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-		
-		for(int r = 0; r < image.getHeight(); r++) {
-			for(int c = 0; c < image.getWidth(); c++) {
-				double val = getHeight(c, r);
-				if(val >= 1d) { val = 1d; }
-				if(val <= -1d) { val = -1d; }
-				double noiseVal = (val * 0.5d) + 0.5d;
-				
-				image.setRGB(c, r, new Color((float)noiseVal, (float)noiseVal, (float)noiseVal).getRGB());
-			}
-		}
-		
-		return image;
-	}
 
 	private double total(double x, double y) {
 		double t = 0.0;
